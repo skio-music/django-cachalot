@@ -49,6 +49,8 @@ class Settings(object):
     CACHALOT_UNCACHABLE_TABLES = ('django_migrations',)
     CACHALOT_QUERY_KEYGEN = 'cachalot.utils.get_query_cache_key'
     CACHALOT_TABLE_KEYGEN = 'cachalot.utils.get_table_cache_key'
+    CACHALOT_ON_HIT = lambda: None
+    CACHALOT_ON_MISS = lambda: None
 
     @classmethod
     def add_converter(cls, setting):
@@ -114,6 +116,16 @@ def convert(value):
 @Settings.add_converter('CACHALOT_TABLE_KEYGEN')
 def convert(value):
     return import_string(value)
+
+
+@Settings.add_converter('CACHALOT_ON_HIT')
+def convert(value):
+    return value if callable(value) else import_string(value)
+
+
+@Settings.add_converter('CACHALOT_ON_MISS')
+def convert(value):
+    return value if callable(value) else import_string(value)
 
 
 cachalot_settings = Settings()

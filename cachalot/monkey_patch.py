@@ -46,6 +46,7 @@ def _get_result_or_execute_query(execute_query_func, cache,
         try:
             timestamp, result = data.pop(cache_key)
             if timestamp >= max(data.values()):
+                cachalot_settings.CACHALOT_ON_HIT()
                 return result
         except (KeyError, TypeError, ValueError):
             # In case `cache_key` is not in `data` or contains bad data,
@@ -60,6 +61,7 @@ def _get_result_or_execute_query(execute_query_func, cache,
     to_be_set = {k: now for k in new_table_cache_keys}
     to_be_set[cache_key] = (now, result)
     cache.set_many(to_be_set, cachalot_settings.CACHALOT_TIMEOUT)
+    cachalot_settings.CACHALOT_ON_MISS()
 
     return result
 
