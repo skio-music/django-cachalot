@@ -49,7 +49,7 @@ class CachalotPanel(Panel):
         for db_alias in settings.DATABASES:
             get_table_cache_key = cachalot_settings.CACHALOT_TABLE_KEYGEN
             model_cache_keys = {
-                get_table_cache_key(db_alias, model._meta.db_table): model
+                get_table_cache_key(db_alias, model._meta.db_table)[0]: model
                 for model in models}
             for cache_key, timestamp in cache.get_many(
                     model_cache_keys.keys()).items():

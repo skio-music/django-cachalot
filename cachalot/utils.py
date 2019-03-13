@@ -197,7 +197,7 @@ def _invalidate_tables(cache, db_alias, tables):
     now = time()
     get_table_cache_key = cachalot_settings.CACHALOT_TABLE_KEYGEN
     cache.set_many(
-        {get_table_cache_key(db_alias, t): now for t in tables},
+        {get_table_cache_key(db_alias, t)[0]: now for t in tables},
         cachalot_settings.CACHALOT_TIMEOUT)
 
     if isinstance(cache, AtomicCache):
