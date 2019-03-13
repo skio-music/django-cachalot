@@ -91,8 +91,8 @@ def get_table_cache_key(db_alias, table):
     :return: A cache key
     :rtype: int
     """
-    cache_key = '%s:%s' % (db_alias, table)
-    return sha1(cache_key.encode('utf-8')).hexdigest()
+    cache_key = ('%s:%s' % (db_alias, table)).encode('utf-8')
+    return sha1(cache_key).hexdigest(), cache_key
 
 
 def _get_tables_from_sql(connection, lowercased_sql):
@@ -183,8 +183,11 @@ def _get_tables(db_alias, query):
 def _get_table_cache_keys(compiler):
     db_alias = compiler.using
     get_table_cache_key = cachalot_settings.CACHALOT_TABLE_KEYGEN
-    return [get_table_cache_key(db_alias, t)
-            for t in _get_tables(db_alias, compiler.query)]
+
+    table_cache_keys, logging_keys = zip(*[get_table_cache_key(db_alias, t)
+                                           for t in _get_tables(db_alias, compiler.query)])
+
+    return list(table_cache_keys), list(logging_keys)
 
 
 def _invalidate_tables(cache, db_alias, tables):

@@ -36,7 +36,7 @@ def _unset_raw_connection(original):
 
 
 def _get_result_or_execute_query(execute_query_func, cache,
-                                 cache_key, table_cache_keys):
+                                 cache_key, table_cache_keys, logging_keys):
     data = cache.get_many(table_cache_keys + [cache_key])
 
     new_table_cache_keys = set(table_cache_keys)
@@ -46,7 +46,7 @@ def _get_result_or_execute_query(execute_query_func, cache,
         try:
             timestamp, result = data.pop(cache_key)
             if timestamp >= max(data.values()):
-                cachalot_settings.CACHALOT_ON_HIT()
+                cachalot_settings.CACHALOT_ON_HIT(table_keys=logging_keys)
                 return result
         except (KeyError, TypeError, ValueError):
             # In case `cache_key` is not in `data` or contains bad data,
@@ -61,7 +61,7 @@ def _get_result_or_execute_query(execute_query_func, cache,
     to_be_set = {k: now for k in new_table_cache_keys}
     to_be_set[cache_key] = (now, result)
     cache.set_many(to_be_set, cachalot_settings.CACHALOT_TIMEOUT)
-    cachalot_settings.CACHALOT_ON_MISS()
+    cachalot_settings.CACHALOT_ON_MISS(table_keys=logging_keys)
 
     return result
 
@@ -78,14 +78,14 @@ def _patch_compiler(original):
 
         try:
             cache_key = cachalot_settings.CACHALOT_QUERY_KEYGEN(compiler)
-            table_cache_keys = _get_table_cache_keys(compiler)
+            table_cache_keys, logging_keys = _get_table_cache_keys(compiler)
         except (EmptyResultSet, UncachableQuery):
             return execute_query_func()
 
         return _get_result_or_execute_query(
             execute_query_func,
             cachalot_caches.get_cache(db_alias=db_alias),
-            cache_key, table_cache_keys)
+            cache_key, table_cache_keys, logging_keys)
 
     return inner
 
