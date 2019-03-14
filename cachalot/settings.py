@@ -51,6 +51,7 @@ class Settings(object):
     CACHALOT_TABLE_KEYGEN = 'cachalot.utils.get_table_cache_key'
     CACHALOT_ON_HIT = lambda *args, **kw: None
     CACHALOT_ON_MISS = lambda *args, **kw: None
+    CACHALOT_ON_TABLES_INVALIDATED = lambda *args, **kw: None
 
     @classmethod
     def add_converter(cls, setting):
@@ -124,6 +125,11 @@ def convert(value):
 
 
 @Settings.add_converter('CACHALOT_ON_MISS')
+def convert(value):
+    return value if callable(value) else import_string(value)
+
+
+@Settings.add_converter('CACHALOT_ON_TABLES_INVALIDATED')
 def convert(value):
     return value if callable(value) else import_string(value)
 

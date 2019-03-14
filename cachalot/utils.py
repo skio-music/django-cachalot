@@ -200,5 +200,7 @@ def _invalidate_tables(cache, db_alias, tables):
         {get_table_cache_key(db_alias, t)[0]: now for t in tables},
         cachalot_settings.CACHALOT_TIMEOUT)
 
+    cachalot_settings.CACHALOT_ON_TABLES_INVALIDATED(db_alias=db_alias, tables=tables)
+
     if isinstance(cache, AtomicCache):
         cache.to_be_invalidated.update(tables)
